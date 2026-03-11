@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PaperNexus</title>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
     <div class="app-shell">
@@ -13,12 +13,25 @@
           <p class="eyebrow">Interactive Paper Graph</p>
           <h1>PaperNexus</h1>
         </div>
-        <div class="paper-meta">
-          <span class="meta-pill">Mock Paper</span>
-          <span class="meta-pill">6 formulas</span>
-          <span class="meta-pill">10 variables</span>
+        <div class="paper-meta" id="paper-meta">
+          <span class="meta-pill">No PDF loaded</span>
         </div>
       </header>
+
+      <section class="panel upload-panel">
+        <div class="upload-copy">
+          <p class="panel-kicker">Pipeline</p>
+          <h2>Upload a PDF for real parsing</h2>
+          <p class="muted">
+            The backend will run PDF extraction, optional OCR, and LLM-based graph reconstruction.
+          </p>
+        </div>
+        <div class="upload-controls">
+          <input id="pdf-input" type="file" accept="application/pdf" />
+          <button id="analyze-button" class="action-button">Analyze PDF</button>
+        </div>
+        <div id="status-banner" class="status-banner">Waiting for a PDF upload.</div>
+      </section>
 
       <main class="layout">
         <aside class="panel sidebar-panel">
@@ -88,6 +101,6 @@
       </main>
     </div>
 
-    <script type="module" src="./src/app.js"></script>
+    <script type="module" src="/src/app.js"></script>
   </body>
 </html>

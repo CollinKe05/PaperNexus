@@ -46,6 +46,33 @@ select {
   margin-bottom: 20px;
 }
 
+.upload-panel {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  gap: 18px;
+  align-items: center;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.upload-controls {
+  display: grid;
+  gap: 12px;
+}
+
+.status-banner {
+  grid-column: 1 / -1;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(0, 79, 89, 0.08);
+  color: var(--accent);
+}
+
+.status-banner.error {
+  background: rgba(159, 52, 40, 0.08);
+  color: var(--trace);
+}
+
 .eyebrow,
 .panel-kicker,
 .formula-label {
@@ -115,18 +142,19 @@ h1 {
 
 .sidebar-panel,
 .detail-panel {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 220px);
   display: flex;
   flex-direction: column;
 }
 
 .graph-panel {
-  min-height: calc(100vh - 120px);
+  min-height: calc(100vh - 220px);
 }
 
 .search-input,
 .connection-controls select,
-.action-button {
+.action-button,
+#pdf-input {
   width: 100%;
   border-radius: 14px;
   border: 1px solid var(--line);
@@ -148,12 +176,21 @@ h1 {
 
 .variable-card,
 .formula-card,
-.chunk-card {
+.chunk-card,
+.empty-state {
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.72);
   border: 1px solid transparent;
   padding: 16px;
   transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+.empty-state {
+  color: var(--muted);
+}
+
+.empty-state.wide {
+  grid-column: 1 / -1;
 }
 
 .variable-card,
@@ -267,7 +304,7 @@ h1 {
 .graph-stage {
   position: relative;
   padding: 18px;
-  min-height: calc(100vh - 220px);
+  min-height: calc(100vh - 320px);
 }
 
 .graph-lines {
@@ -348,6 +385,11 @@ h1 {
   border: 0;
 }
 
+.action-button:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .path-result {
   margin-top: 12px;
   min-height: 24px;
@@ -362,7 +404,8 @@ h1 {
 }
 
 @media (max-width: 1120px) {
-  .layout {
+  .layout,
+  .upload-panel {
     grid-template-columns: 1fr;
   }
 
