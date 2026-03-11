@@ -1,0 +1,93 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PaperNexus</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Interactive Paper Graph</p>
+          <h1>PaperNexus</h1>
+        </div>
+        <div class="paper-meta">
+          <span class="meta-pill">Mock Paper</span>
+          <span class="meta-pill">6 formulas</span>
+          <span class="meta-pill">10 variables</span>
+        </div>
+      </header>
+
+      <main class="layout">
+        <aside class="panel sidebar-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Dynamic Parameter Sidebar</p>
+              <h2>Variables</h2>
+            </div>
+            <input
+              id="variable-search"
+              class="search-input"
+              type="search"
+              placeholder="Search symbol / meaning"
+            />
+          </div>
+
+          <section id="variable-list" class="variable-list" aria-label="Variable list"></section>
+
+          <section class="panel-footer">
+            <h3>Connection Finder</h3>
+            <p class="muted">
+              Pick any two variables to reveal the shortest semantic path through the formula graph.
+            </p>
+            <div class="connection-controls">
+              <select id="source-variable"></select>
+              <select id="target-variable"></select>
+              <button id="find-path-button" class="action-button">Highlight Path</button>
+            </div>
+            <div id="path-result" class="path-result"></div>
+          </section>
+        </aside>
+
+        <section class="panel graph-panel">
+          <div class="panel-header graph-header">
+            <div>
+              <p class="panel-kicker">Formula Graph Area</p>
+              <h2>Dependency Topology</h2>
+            </div>
+            <div class="graph-legend">
+              <span><i class="legend-line"></i> dependency</span>
+              <span><i class="legend-chip selected"></i> selected</span>
+              <span><i class="legend-chip traced"></i> traced</span>
+            </div>
+          </div>
+
+          <div class="graph-stage">
+            <svg id="graph-lines" class="graph-lines" aria-hidden="true"></svg>
+            <div id="graph-grid" class="graph-grid" aria-label="Formula graph"></div>
+          </div>
+        </section>
+
+        <aside class="panel detail-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Micro-Formula Detail View</p>
+              <h2 id="detail-title">Select a formula</h2>
+            </div>
+          </div>
+
+          <section id="detail-content" class="detail-content"></section>
+
+          <section class="panel-footer doc-panel">
+            <h3>Document Insight</h3>
+            <div id="doc-insight" class="doc-insight"></div>
+          </section>
+        </aside>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
