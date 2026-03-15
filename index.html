@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>PaperNexus</title>
+    <link
+      rel="stylesheet"
+      href="/src/vendor/package/dist/katex.min.css"
+    />
     <link rel="stylesheet" href="/styles.css" />
   </head>
   <body>
@@ -21,16 +25,23 @@
       <section class="panel upload-panel">
         <div class="upload-copy">
           <p class="panel-kicker">Pipeline</p>
-          <h2>Upload a PDF for real parsing</h2>
+          <h2>Upload a PDF for semantic parsing + precise formula grounding</h2>
           <p class="muted">
-            The backend will run PDF extraction, optional OCR, and LLM-based graph reconstruction.
+            The backend runs formula region detection, optional OCR, and semantic dependency parsing.
           </p>
         </div>
         <div class="upload-controls">
           <input id="pdf-input" type="file" accept="application/pdf" />
+          <label class="toggle-row" for="quick-mode">
+            <input id="quick-mode" type="checkbox" />
+            <span>Quick mode: only run PyMuPDF first, then open the reader immediately</span>
+          </label>
           <button id="analyze-button" class="action-button">Analyze PDF</button>
         </div>
         <div id="status-banner" class="status-banner">Waiting for a PDF upload.</div>
+        <div class="progress-wrap" aria-hidden="true">
+          <div id="status-progress-bar" class="progress-bar"></div>
+        </div>
       </section>
 
       <main class="layout">
@@ -74,6 +85,7 @@
               <span><i class="legend-line"></i> dependency</span>
               <span><i class="legend-chip selected"></i> selected</span>
               <span><i class="legend-chip traced"></i> traced</span>
+              <span><i class="legend-chip page-linked"></i> page-linked</span>
             </div>
           </div>
 
@@ -98,9 +110,40 @@
             <div id="doc-insight" class="doc-insight"></div>
           </section>
         </aside>
+
+        <aside class="panel pdf-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">PDF Preview</p>
+              <h2>Page + Region Linked Reading</h2>
+            </div>
+            <div class="pdf-controls">
+              <button id="prev-page" class="mini-button" type="button">Prev</button>
+              <span id="page-indicator">Page 1 / 1</span>
+              <button id="next-page" class="mini-button" type="button">Next</button>
+              <a id="open-pdf-link" class="mini-link" target="_blank" rel="noreferrer">Open original</a>
+            </div>
+          </div>
+
+          <section class="pdf-preview-wrap">
+            <div id="pdf-canvas-wrap" class="pdf-canvas-wrap">
+              <img id="pdf-page-image" class="pdf-page-image" alt="PDF page preview" />
+              <div id="formula-overlay" class="formula-overlay"></div>
+            </div>
+          </section>
+
+          <section class="panel-footer">
+            <h3>Formulas on this page</h3>
+            <div id="page-formula-links" class="page-formula-links"></div>
+          </section>
+        </aside>
       </main>
     </div>
 
+    <script
+      defer
+      src="/src/vendor/package/dist/katex.min.js"
+    ></script>
     <script type="module" src="/src/app.js"></script>
   </body>
 </html>

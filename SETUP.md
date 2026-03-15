@@ -6,14 +6,17 @@
 pip install -r requirements.txt
 ```
 
-## Configure optional APIs
+## Configure optional APIs and recognizers
 
 Copy `.env.example` to `.env` and set any keys you have:
 
 - `OPENAI_API_KEY` for real LLM graph reconstruction
 - `MATHPIX_APP_ID` and `MATHPIX_APP_KEY` for OCR on formula images
+- `NOUGAT_ENABLED=true` and `NOUGAT_COMMAND=nougat` to enable Nougat formula extraction
 
-Without these keys, the app still runs with heuristic fallbacks.
+If Nougat is enabled, make sure the `nougat` CLI is installed and available in `PATH`.
+
+Without these optional components, the app still runs with semantic fallback parsing.
 
 ## Run
 
