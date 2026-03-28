@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import asyncio
 import os
@@ -17,6 +17,7 @@ ENV_PATTERN = re.compile(r"\\begin\{(equation\*?|align\*?|gather\*?)\}(.*?)\\end
 INLINE_PATTERN = re.compile(r"\$(.{8,200}?)\$")
 BRACKET_BLOCK_PATTERN = re.compile(r"\\\[(.*?)\\\]", re.S)
 PAREN_INLINE_PATTERN = re.compile(r"\\\((.{3,200}?)\\\)")
+PROSE_MARKERS = {"where", "which", "that", "this", "these", "those", "because", "therefore", "while", "denotes"}
 
 
 class NougatService:
@@ -51,7 +52,6 @@ class NougatService:
             if command_path is None:
                 raise RuntimeError("Nougat command is not installed or not reachable.")
 
-            command = [command_path, str(input_pdf), "--out", str(output_dir)]
             env = os.environ.copy()
             cache_root = self._resolve_path(settings.nougat_cache_dir)
             cache_root.mkdir(parents=True, exist_ok=True)
@@ -62,8 +62,9 @@ class NougatService:
             env["HF_HOME"] = str(cache_root / "huggingface")
             env["NLTK_DATA"] = str(nltk_data_root)
             env["NO_ALBUMENTATIONS_UPDATE"] = "1"
+
             proc = subprocess.run(
-                command,
+                [command_path, str(input_pdf), "--out", str(output_dir)],
                 check=False,
                 capture_output=True,
                 text=True,
@@ -86,13 +87,11 @@ class NougatService:
                 formula_id = f"ng-{idx}"
                 if formula_id in existing_ids:
                     formula_id = f"ng-{idx}-alt"
-
-                page = infer_page(idx, len(expressions), page_count)
                 candidates.append(
                     ParsedFormulaCandidate(
                         id=formula_id,
                         expression=expression,
-                        page=page,
+                        page=infer_page(idx, len(expressions), page_count),
                         context="Formula extracted via Nougat markdown conversion.",
                         source="nougat",
                         bbox=None,
@@ -108,11 +107,9 @@ class NougatService:
         command = settings.nougat_command.strip()
         if not command:
             return None
-
         command_path = Path(command)
         if command_path.exists():
             return str(command_path)
-
         return shutil.which(command)
 
     def _resolve_path(self, raw_path: str) -> Path:
@@ -131,9 +128,10 @@ def extract_latex_blocks(markdown_text: str) -> list[str]:
             results.append(expr)
 
     for match in ENV_PATTERN.finditer(markdown_text):
-        expr = normalize_formula_text(match.group(2))
-        if is_useful_formula(expr):
-            results.append(expr)
+        for piece in split_environment_formulas(match.group(2)):
+            expr = normalize_formula_text(piece)
+            if is_useful_formula(expr):
+                results.append(expr)
 
     for match in BRACKET_BLOCK_PATTERN.finditer(markdown_text):
         expr = normalize_formula_text(match.group(1))
@@ -142,12 +140,12 @@ def extract_latex_blocks(markdown_text: str) -> list[str]:
 
     for match in INLINE_PATTERN.finditer(markdown_text):
         expr = normalize_formula_text(match.group(1))
-        if is_useful_formula(expr):
+        if is_useful_inline_formula(expr):
             results.append(expr)
 
     for match in PAREN_INLINE_PATTERN.finditer(markdown_text):
         expr = normalize_formula_text(match.group(1))
-        if is_useful_formula(expr):
+        if is_useful_inline_formula(expr):
             results.append(expr)
 
     deduped: list[str] = []
@@ -158,8 +156,13 @@ def extract_latex_blocks(markdown_text: str) -> list[str]:
             continue
         seen.add(key)
         deduped.append(expr)
-
     return deduped
+
+
+def split_environment_formulas(content: str) -> list[str]:
+    pieces = re.split(r"\\\\|\n+", content)
+    cleaned = [piece.strip() for piece in pieces if piece.strip()]
+    return cleaned or [content]
 
 
 def normalize_formula_text(text: str) -> str:
@@ -167,11 +170,23 @@ def normalize_formula_text(text: str) -> str:
 
 
 def is_useful_formula(expression: str) -> bool:
-    if len(expression) < 6:
+    if len(expression) < 6 or len(expression) > 220:
         return False
     operator_count = sum(expression.count(op) for op in ["=", "+", "-", "*", "/", "\\frac", "\\sum", "\\int"])
-    symbol_count = len(re.findall(r"[A-Za-zΑ-Ωα-ω]", expression))
+    symbol_count = len(re.findall(r"[A-Za-z]", expression))
+    prose_hits = sum(word in PROSE_MARKERS for word in re.findall(r"[A-Za-z]+", expression.lower()))
+    if prose_hits >= 3 and "=" not in expression and "\\frac" not in expression and "\\sum" not in expression:
+        return False
     return operator_count >= 1 and symbol_count >= 2
+
+
+def is_useful_inline_formula(expression: str) -> bool:
+    if not is_useful_formula(expression):
+        return False
+    if "=" in expression or "\\frac" in expression or "\\sum" in expression or "\\int" in expression:
+        return True
+    operator_count = sum(expression.count(op) for op in ["+", "-", "*", "/", "^", "_"])
+    return operator_count >= 3 and len(re.findall(r"[A-Za-z]", expression)) >= 3
 
 
 def infer_page(index: int, total: int, page_count: int) -> int:

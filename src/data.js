@@ -3,6 +3,7 @@ export const fallbackAnalysis = {
   sourceFilename: "attention-is-all-you-need.pdf",
   pdfUrl: "/uploads/attention-is-all-you-need.pdf",
   pageCount: 15,
+  language: "en",
   status: "fallback",
   variables: [
     { id: "q", symbol: "Q", name: "Query matrix", type: "Matrix", unit: "-", role: "Attention input", meaning: "Represents the queries used to retrieve relevant information from keys.", memory: "What each token is asking for.", source: "Demo paper", formulas: ["f1", "f2"], anchors: ["p.4: We compute attention as a function of queries, keys and values."] },

@@ -1,14 +1,208 @@
 import { fallbackAnalysis } from "./data.js";
 
 const TASK_STAGE_LABELS = {
-  queued: "Queued",
-  uploaded: "Uploaded",
-  pymupdf_processing: "PyMuPDF processing",
-  pymupdf_done: "PyMuPDF done",
-  nougat_processing: "Nougat processing",
-  semantic_analysis: "Semantic analysis",
-  completed: "Completed",
-  failed: "Failed",
+  en: {
+    queued: "Queued",
+    uploaded: "Uploaded",
+    pymupdf_processing: "PyMuPDF processing",
+    pymupdf_done: "PyMuPDF done",
+    nougat_processing: "Nougat processing",
+    semantic_analysis: "Semantic analysis",
+    completed: "Completed",
+    failed: "Failed",
+  },
+  zh: {
+    queued: "已排队",
+    uploaded: "已上传",
+    pymupdf_processing: "PyMuPDF 处理中",
+    pymupdf_done: "PyMuPDF 已完成",
+    nougat_processing: "Nougat 处理中",
+    semantic_analysis: "语义分析中",
+    completed: "已完成",
+    failed: "失败",
+  },
+};
+
+const UI_STRINGS = {
+  en: {
+    languageLabel: "Language",
+    heroEyebrow: "Interactive Paper Graph",
+    uploadKicker: "Pipeline",
+    uploadTitle: "Upload a PDF for semantic parsing + precise formula grounding",
+    uploadCopy: "The backend runs formula region detection, optional OCR, and semantic dependency parsing.",
+    quickMode: "Quick mode: only run PyMuPDF first, then open the reader immediately",
+    analyzeButton: "Analyze PDF",
+    waitingUpload: "Waiting for a PDF upload.",
+    sidebarKicker: "Dynamic Parameter Sidebar",
+    variablesTitle: "Variables",
+    variableSearch: "Search symbol / meaning",
+    connectionTitle: "Connection Finder",
+    connectionCopy: "Pick any two variables to reveal the shortest semantic path through the formula graph.",
+    highlightPath: "Highlight Path",
+    graphKicker: "Formula Graph Area",
+    graphTitle: "Dependency Topology",
+    legendDependency: "dependency",
+    legendSelected: "selected",
+    legendTraced: "traced",
+    legendPageLinked: "page-linked",
+    detailKicker: "Micro-Formula Detail View",
+    selectFormula: "Select a formula",
+    docInsightTitle: "Document Insight",
+    pdfKicker: "PDF Preview",
+    pdfTitle: "Page + Region Linked Reading",
+    prev: "Prev",
+    next: "Next",
+    openOriginal: "Open original",
+    pageFormulasTitle: "Formulas on this page",
+    noPdfLoaded: "No PDF loaded",
+    backendReady: "Backend ready. PDF parser: {pdf_parser}. Nougat: {nougat}. OCR: {ocr}. LLM: {llm}.",
+    backendMissing: "Backend is not reachable yet. Start the FastAPI server to analyze real PDFs.",
+    choosePdfFirst: "Choose a PDF file first.",
+    uploading: "Uploading {name}...",
+    pagePreviewMissing: "The current page preview is not available yet.",
+    noVariablesMatch: "No variables matched the current search.",
+    noFormulas: "No formulas were reconstructed for this PDF.",
+    uploadToInspect: "Upload a paper to inspect a formula.",
+    symbolsInFormula: "Symbols in this formula",
+    chunkedExplanation: "Chunked explanation",
+    howToUse: "How to use",
+    pipeline: "Pipeline",
+    warnings: "Warnings",
+    formulaCandidates: "Formula candidates",
+    noWarnings: "No warnings.",
+    noCandidates: "No candidates detected.",
+    noFormulasOnPage: "No formula node is currently linked to this page.",
+    pageIndicator: "Page {page} / {maxPage}",
+    sourcePage: "Source page",
+    semantic: "Semantic",
+    memoryHook: "Memory hook",
+    paperAnchors: "Paper anchors",
+    anchors: "Anchors",
+    appearsIn: "Appears in",
+    unit: "Unit",
+    role: "Role",
+    source: "Source",
+    memory: "Memory",
+    jumpToPage: "Jump to page {page}",
+    taskLanguageMismatch: "UI language is {selected}. Current explanations are {current}. Re-run analysis to regenerate explanations in the selected language.",
+    taskLanguageCurrent: "Current explanation language: {current}.",
+    usageTip1: "Upload returns immediately and the page begins polling task progress in the background.",
+    usageTip2: "PyMuPDF produces the first visible graph first; Nougat enhancement may continue after you can already read the paper.",
+    usageTip3: "Click a formula card in the center, then inspect its rendered equation and linked variables on the right.",
+    usageTip4: "Use the page badge or Jump button to move the PDF preview to the linked page.",
+    usageTipFallback: "Fallback mode means this result was reconstructed without full LLM semantics, so labels and relations are less reliable.",
+    usageTipWarnings: "If a formula looks incomplete, check the warnings before trusting the semantic explanation.",
+    noPath: "No semantic path found in the current graph.",
+    alreadySelected: "{symbol} is already selected.",
+    statusModeHeuristic: "heuristic mode",
+    statusModeInteractive: "interactive mode",
+    stageDemo: "demo",
+    pageBadge: "Page {page}",
+    pageShort: "p.{page}",
+    detailsJoiner: " - ",
+    formulaShort: "{id} - {title}",
+    unknown: "unknown",
+  },
+  zh: {},
+};
+
+UI_STRINGS.zh = { ...UI_STRINGS.en, languageLabel: "语言", heroEyebrow: "论文交互图谱", uploadKicker: "流程", uploadTitle: "上传 PDF，进行语义解析和公式定位", uploadCopy: "后端会运行公式区域检测、可选 OCR 和语义依赖解析。", quickMode: "快速模式：先只跑 PyMuPDF，立即打开阅读界面", analyzeButton: "解析 PDF", waitingUpload: "等待上传 PDF。", sidebarKicker: "动态变量侧栏", variablesTitle: "变量", variableSearch: "搜索符号 / 含义", connectionTitle: "连接查找", connectionCopy: "任选两个变量，查看它们在公式图中的最短语义路径。", highlightPath: "高亮路径", graphKicker: "公式图区", graphTitle: "依赖拓扑", legendDependency: "依赖", legendSelected: "选中", legendTraced: "追踪", legendPageLinked: "页关联", detailKicker: "公式详情", selectFormula: "选择一个公式", docInsightTitle: "文档洞察", pdfKicker: "PDF 预览", pdfTitle: "页码与区域联动阅读", prev: "上一页", next: "下一页", openOriginal: "打开原文", pageFormulasTitle: "本页公式", noPdfLoaded: "未加载 PDF", backendReady: "后端已就绪。PDF 解析器：{pdf_parser}。Nougat：{nougat}。OCR：{ocr}。LLM：{llm}。", backendMissing: "暂时无法连接后端。请先启动 FastAPI 服务。", choosePdfFirst: "请先选择一个 PDF 文件。", uploading: "正在上传 {name}...", pagePreviewMissing: "当前页预览暂时不可用。", noVariablesMatch: "没有变量匹配当前搜索。", noFormulas: "当前 PDF 没有重建出公式。", uploadToInspect: "上传论文后可查看公式详情。", symbolsInFormula: "该公式中的符号", chunkedExplanation: "分块解释", howToUse: "使用方式", pipeline: "流程", warnings: "警告", formulaCandidates: "公式候选", noWarnings: "没有警告。", noCandidates: "没有检测到候选公式。", noFormulasOnPage: "当前页没有关联的公式节点。", pageIndicator: "第 {page} / {maxPage} 页", sourcePage: "来源页", semantic: "语义", memoryHook: "记忆钩子", paperAnchors: "论文锚点", anchors: "锚点", appearsIn: "出现于", unit: "单位", role: "角色", source: "来源", memory: "记忆", jumpToPage: "跳到第 {page} 页", taskLanguageMismatch: "界面语言是 {selected}，当前解释内容是 {current}。请重新解析以生成所选语言的解释。", taskLanguageCurrent: "当前解释语言：{current}。", usageTip1: "上传会立即返回，页面会在后台轮询解析进度。", usageTip2: "PyMuPDF 会先产出第一版可见图谱；Nougat 增强可能在你开始阅读后继续完成。", usageTip3: "先点中间的公式卡片，再在右侧查看渲染公式和变量解释。", usageTip4: "可用页码徽标或 Jump 按钮跳到对应 PDF 页面。", usageTipFallback: "Fallback 模式表示当前结果未使用完整 LLM 语义分析，因此标签和依赖关系可靠性更低。", usageTipWarnings: "如果某条公式看起来不完整，先查看警告再决定是否采信解释。", noPath: "当前图里没有找到语义路径。", alreadySelected: "{symbol} 已经被选中。", statusModeHeuristic: "启发式模式", statusModeInteractive: "交互模式", stageDemo: "演示", pageBadge: "第 {page} 页", pageShort: "第{page}页", detailsJoiner: " - ", formulaShort: "{id} - {title}", unknown: "未知" };
+
+const CLEAN_TASK_STAGE_LABELS = {
+  en: TASK_STAGE_LABELS.en,
+  zh: {
+    queued: "排队中",
+    uploaded: "已上传",
+    pymupdf_processing: "PyMuPDF 解析中",
+    pymupdf_done: "PyMuPDF 已完成",
+    nougat_processing: "Nougat 处理中",
+    semantic_analysis: "语义分析中",
+    completed: "已完成",
+    failed: "失败",
+  },
+};
+
+const CLEAN_UI_STRINGS = {
+  en: UI_STRINGS.en,
+  zh: {
+    ...UI_STRINGS.en,
+    languageLabel: "语言",
+    heroEyebrow: "论文交互图谱",
+    uploadKicker: "解析流程",
+    uploadTitle: "上传 PDF，生成带公式锚点与语义解释的论文阅读页",
+    uploadCopy: "后端会执行公式区域检测、可选 OCR 与语义依赖分析。",
+    quickMode: "快速模式：先只运行 PyMuPDF，尽快打开阅读页",
+    analyzeButton: "解析 PDF",
+    waitingUpload: "等待上传 PDF。",
+    sidebarKicker: "变量侧栏",
+    variablesTitle: "变量",
+    variableSearch: "搜索符号 / 含义",
+    connectionTitle: "关系查询",
+    connectionCopy: "选择两个变量，查看它们在当前公式图中的最短路径。",
+    highlightPath: "高亮路径",
+    graphKicker: "公式图区域",
+    graphTitle: "依赖拓扑",
+    legendDependency: "依赖",
+    legendSelected: "已选中",
+    legendTraced: "已追踪",
+    legendPageLinked: "页内关联",
+    detailKicker: "公式详情",
+    selectFormula: "选择一个公式",
+    docInsightTitle: "文档说明",
+    pdfKicker: "PDF 预览",
+    pdfTitle: "页码与区域联动阅读",
+    prev: "上一页",
+    next: "下一页",
+    openOriginal: "打开原 PDF",
+    pageFormulasTitle: "本页公式",
+    noPdfLoaded: "未加载 PDF",
+    backendReady: "后端可用。PDF 解析器：{pdf_parser}。Nougat：{nougat}。OCR：{ocr}。LLM：{llm}。",
+    backendMissing: "暂时无法连接后端。请先启动 FastAPI 服务。",
+    choosePdfFirst: "请先选择一个 PDF 文件。",
+    uploading: "正在上传 {name}...",
+    pagePreviewMissing: "当前页预览暂不可用。",
+    noVariablesMatch: "没有匹配当前搜索条件的变量。",
+    noFormulas: "当前 PDF 没有重建出公式。",
+    uploadToInspect: "上传论文后即可查看公式详情。",
+    symbolsInFormula: "本公式中的符号",
+    chunkedExplanation: "分块解释",
+    howToUse: "使用方式",
+    pipeline: "解析流程",
+    warnings: "警告",
+    formulaCandidates: "公式候选",
+    noWarnings: "没有警告。",
+    noCandidates: "没有检测到公式候选。",
+    noFormulasOnPage: "当前页面没有关联到公式节点。",
+    pageIndicator: "第 {page} / {maxPage} 页",
+    sourcePage: "来源页",
+    semantic: "语义结构",
+    memoryHook: "记忆点",
+    paperAnchors: "论文锚点",
+    anchors: "锚点",
+    appearsIn: "出现于",
+    unit: "单位",
+    role: "角色",
+    source: "来源",
+    memory: "记忆",
+    jumpToPage: "跳到第 {page} 页",
+    taskLanguageMismatch: "界面语言为 {selected}，当前解释语言为 {current}。请重新解析以生成所选语言的解释。",
+    taskLanguageCurrent: "当前解释语言：{current}。",
+    usageTip1: "上传后会立即返回任务，并在后台持续轮询解析进度。",
+    usageTip2: "PyMuPDF 会先生成首版可读结果，Nougat 作为后台增强补充公式。",
+    usageTip3: "点击中间公式卡片，再在右侧查看渲染后的公式与变量解释。",
+    usageTip4: "点击页码标签或跳转按钮，可将 PDF 预览切到对应页面。",
+    usageTipFallback: "Fallback 模式表示当前结果未经过完整 LLM 语义分析，标签和关系可信度较低。",
+    usageTipWarnings: "如果某个公式看起来不完整，请先查看警告后再信任解释。",
+    noPath: "当前图中没有找到语义路径。",
+    alreadySelected: "{symbol} 已经被选中。",
+    statusModeHeuristic: "启发式模式",
+    statusModeInteractive: "交互模式",
+    stageDemo: "演示",
+    pageBadge: "第 {page} 页",
+    pageShort: "p.{page}",
+    formulaShort: "{id} - {title}",
+    unknown: "未知",
+  },
 };
 
 const state = {
@@ -26,6 +220,7 @@ const state = {
   activeTaskProgress: 0,
   quickMode: false,
   pollHandle: null,
+  selectedLanguage: window.localStorage.getItem("papernexus-language") || fallbackAnalysis.language || "en",
 };
 
 const variableListEl = document.querySelector("#variable-list");
@@ -41,9 +236,12 @@ const pathResultEl = document.querySelector("#path-result");
 const pathButtonEl = document.querySelector("#find-path-button");
 const pdfInputEl = document.querySelector("#pdf-input");
 const quickModeEl = document.querySelector("#quick-mode");
+const languageSelectEl = document.querySelector("#language-select");
 const analyzeButtonEl = document.querySelector("#analyze-button");
 const statusBannerEl = document.querySelector("#status-banner");
 const statusProgressBarEl = document.querySelector("#status-progress-bar");
+const usageGuideTitleEl = document.querySelector("#usage-guide-title");
+const usageGuideEl = document.querySelector("#usage-guide");
 const paperMetaEl = document.querySelector("#paper-meta");
 const prevPageEl = document.querySelector("#prev-page");
 const nextPageEl = document.querySelector("#next-page");
@@ -54,7 +252,9 @@ const formulaOverlayEl = document.querySelector("#formula-overlay");
 const openPdfLinkEl = document.querySelector("#open-pdf-link");
 
 function init() {
+  languageSelectEl.value = normalizeLanguage(state.selectedLanguage);
   bindEvents();
+  renderStaticText();
   syncStateWithAnalysis(true);
   render();
   requestAnimationFrame(drawConnections);
@@ -85,6 +285,13 @@ function bindEvents() {
   quickModeEl.addEventListener("change", () => {
     state.quickMode = quickModeEl.checked;
   });
+  languageSelectEl.addEventListener("change", () => {
+    state.selectedLanguage = normalizeLanguage(languageSelectEl.value);
+    window.localStorage.setItem("papernexus-language", state.selectedLanguage);
+    renderStaticText();
+    render();
+    probeHealth();
+  });
 
   analyzeButtonEl.addEventListener("click", analyzePdf);
   prevPageEl.addEventListener("click", () => setActivePdfPage(state.activePdfPage - 1));
@@ -92,9 +299,45 @@ function bindEvents() {
   pdfPageImageEl.addEventListener("error", () => {
     pdfPageImageEl.removeAttribute("src");
     if (state.activeTaskStatus !== "running") {
-      setStatus("The current page preview is not available yet.", false, state.activeTaskProgress);
+      setStatus(t("pagePreviewMissing"), false, state.activeTaskProgress);
     }
   });
+}
+
+function renderStaticText() {
+  setText("#hero-eyebrow", t("heroEyebrow"));
+  setText("#language-label", t("languageLabel"));
+  setText("#upload-kicker", t("uploadKicker"));
+  setText("#upload-title", t("uploadTitle"));
+  setText("#upload-copy-text", t("uploadCopy"));
+  setText("#quick-mode-label", t("quickMode"));
+  setText("#analyze-button", t("analyzeButton"));
+  if (usageGuideTitleEl) {
+    usageGuideTitleEl.textContent = t("howToUse");
+  }
+  if (!state.activeTaskId && !state.loading) {
+    setStatus(t("waitingUpload"), false, 0);
+  }
+  setText("#sidebar-kicker", t("sidebarKicker"));
+  setText("#variables-title", t("variablesTitle"));
+  searchInputEl.placeholder = t("variableSearch");
+  setText("#connection-title", t("connectionTitle"));
+  setText("#connection-copy", t("connectionCopy"));
+  setText("#find-path-button", t("highlightPath"));
+  setText("#graph-kicker", t("graphKicker"));
+  setText("#graph-title", t("graphTitle"));
+  setText("#legend-dependency", t("legendDependency"));
+  setText("#legend-selected", t("legendSelected"));
+  setText("#legend-traced", t("legendTraced"));
+  setText("#legend-page-linked", t("legendPageLinked"));
+  setText("#detail-kicker", t("detailKicker"));
+  setText("#doc-insight-title", t("docInsightTitle"));
+  setText("#pdf-kicker", t("pdfKicker"));
+  setText("#pdf-title", t("pdfTitle"));
+  setText("#prev-page", t("prev"));
+  setText("#next-page", t("next"));
+  setText("#open-pdf-link", t("openOriginal"));
+  setText("#page-formulas-title", t("pageFormulasTitle"));
 }
 
 async function probeHealth() {
@@ -105,19 +348,19 @@ async function probeHealth() {
     }
     const health = await response.json();
     setStatus(
-      `Backend ready. PDF parser: ${health.pdf_parser}. Nougat: ${health.nougat}. OCR: ${health.ocr}. LLM: ${health.llm}.`,
+      t("backendReady", health),
       false,
       0
     );
   } catch {
-    setStatus("Backend is not reachable yet. Start the FastAPI server to analyze real PDFs.", true, 0);
+    setStatus(t("backendMissing"), true, 0);
   }
 }
 
 async function analyzePdf() {
   const file = pdfInputEl.files?.[0];
   if (!file) {
-    setStatus("Choose a PDF file first.", true, 0);
+    setStatus(t("choosePdfFirst"), true, 0);
     return;
   }
 
@@ -129,11 +372,12 @@ async function analyzePdf() {
   state.activeTaskProgress = 0.02;
   state.quickMode = quickModeEl.checked;
   analyzeButtonEl.disabled = true;
-  setStatus(`Uploading ${file.name}...`, false, state.activeTaskProgress);
+  setStatus(t("uploading", { name: file.name }), false, state.activeTaskProgress);
 
   const formData = new FormData();
   formData.append("file", file);
   formData.append("quick_mode", quickModeEl.checked ? "true" : "false");
+  formData.append("language", state.selectedLanguage);
 
   try {
     const response = await fetch("/api/analyze", { method: "POST", body: formData });
@@ -255,6 +499,7 @@ function syncStateWithAnalysis(forceReset = false) {
 
 function render() {
   renderMeta();
+  renderUsageGuide();
   renderVariableList();
   renderGraph();
   renderDetail();
@@ -265,8 +510,8 @@ function render() {
 
 function renderMeta() {
   const analysis = state.analysis;
-  const modeLabel = analysis.status === "fallback" ? "heuristic mode" : "interactive mode";
-  const stageLabel = state.activeTaskId ? TASK_STAGE_LABELS[state.activeTaskStage] || state.activeTaskStage : "demo";
+  const modeLabel = analysis.status === "fallback" ? t("statusModeHeuristic") : t("statusModeInteractive");
+  const stageLabel = state.activeTaskId ? getStageLabel(state.activeTaskStage) : t("stageDemo");
   paperMetaEl.innerHTML = [
     `<span class="meta-pill">${escapeHtml(analysis.documentTitle)}</span>`,
     `<span class="meta-pill">${analysis.pageCount} pages</span>`,
@@ -278,8 +523,17 @@ function renderMeta() {
   ].join("");
 }
 
+function renderUsageGuide() {
+  if (!usageGuideEl) {
+    return;
+  }
+  const tips = buildUsageTips(state.analysis);
+  usageGuideEl.innerHTML = `<ul>${tips.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`;
+}
+
 function renderVariableList() {
   const formulaMap = getFormulaMap();
+  const selectedVariable = getVariableMap().get(state.selectedVariableId);
   const filteredVariables = getVariables().filter((variable) => {
     if (!state.search) {
       return true;
@@ -289,54 +543,90 @@ function renderVariableList() {
     return haystack.includes(state.search);
   });
 
-  variableListEl.innerHTML = filteredVariables.length
-    ? filteredVariables
-        .map((variable) => {
-          const isSelected = variable.id === state.selectedVariableId;
-          const isTraced = state.tracedVariableIds.includes(variable.id);
-          const relatedFormulaLinks = (variable.formulas || [])
-            .map((formulaId) => {
-              const formula = formulaMap.get(formulaId);
-              const page = formula?.page ? ` (p.${formula.page})` : "";
-              return `<button class="inline-link" data-formula-link="${formulaId}">${escapeHtml(formula?.title ?? formulaId)}${page}</button>`;
-            })
-            .join("");
+  const summaryHtml = selectedVariable
+    ? `
+      <section class="variable-summary">
+        <div class="variable-summary-head">
+          <div class="symbol symbol-math" data-math data-display="false">${escapeHtml(toLatexSymbol(selectedVariable.symbol))}</div>
+          <div>
+            <h3>${escapeHtml(selectedVariable.name)}</h3>
+            <p class="muted">${escapeHtml(selectedVariable.role)} · ${escapeHtml(selectedVariable.type)}</p>
+          </div>
+        </div>
+        <p class="meaning compact-meaning">${escapeHtml(selectedVariable.meaning)}</p>
+        <div class="summary-meta-row">
+          <span><strong>${escapeHtml(t("unit"))}:</strong> ${escapeHtml(selectedVariable.unit || "-")}</span>
+          <span><strong>${escapeHtml(t("source"))}:</strong> ${escapeHtml(selectedVariable.source)}</span>
+        </div>
+      </section>
+    `
+    : "";
 
-          return `
-            <article class="variable-card ${isSelected ? "selected" : ""} ${isTraced ? "traced" : ""}" data-variable-id="${variable.id}">
-              <div class="variable-card-top">
-                <div>
-                  <div class="symbol symbol-math" data-math data-display="false">${escapeHtml(toLatexSymbol(variable.symbol))}</div>
-                  <h3>${escapeHtml(variable.name)}</h3>
-                </div>
-                <span class="type-badge">${escapeHtml(variable.type)}</span>
-              </div>
-              <p class="meaning">${escapeHtml(variable.meaning)}</p>
-              <dl class="meta-grid">
-                <div><dt>Unit</dt><dd>${escapeHtml(variable.unit || "-")}</dd></div>
-                <div><dt>Role</dt><dd>${escapeHtml(variable.role)}</dd></div>
-                <div><dt>Source</dt><dd>${escapeHtml(variable.source)}</dd></div>
-                <div><dt>Memory</dt><dd>${escapeHtml(variable.memory)}</dd></div>
-              </dl>
-              ${renderAnchorList(variable.anchors, "Anchors")}
-              <div class="reverse-trace">
-                <span>Appears in</span>
-                <div class="trace-links">${relatedFormulaLinks}</div>
-              </div>
-            </article>
-          `;
+  const tableHtml = filteredVariables.length
+    ? `
+      <div class="variable-table-wrap">
+        <table class="variable-table">
+          <thead>
+            <tr>
+              <th>${escapeHtml(t("variablesTitle"))}</th>
+              <th>${escapeHtml(t("role"))}</th>
+              <th>${escapeHtml(t("sourcePage"))}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${filteredVariables
+              .map((variable) => {
+                const isSelected = variable.id === state.selectedVariableId;
+                const firstFormula = (variable.formulas || []).map((formulaId) => formulaMap.get(formulaId)).find(Boolean);
+                const pageLabel = firstFormula?.page ? t("pageShort", { page: firstFormula.page }) : "-";
+                return `
+                  <tr class="${isSelected ? "is-selected" : ""}" data-variable-row="${variable.id}">
+                    <td>
+                      <div class="table-symbol-row">
+                        <span class="symbol symbol-math" data-math data-display="false">${escapeHtml(toLatexSymbol(variable.symbol))}</span>
+                        <div class="table-symbol-copy">
+                          <strong>${escapeHtml(variable.name)}</strong>
+                          <small>${escapeHtml(variable.unit || "-")}</small>
+                        </div>
+                      </div>
+                    </td>
+                    <td>${escapeHtml(variable.role)}</td>
+                    <td>${escapeHtml(pageLabel)}</td>
+                  </tr>
+                `;
+              })
+              .join("")}
+          </tbody>
+        </table>
+      </div>
+    `
+    : `<div class="empty-state">${escapeHtml(t("noVariablesMatch"))}</div>`;
+
+  const relatedFormulaLinks = selectedVariable
+    ? (selectedVariable.formulas || [])
+        .map((formulaId) => {
+          const formula = formulaMap.get(formulaId);
+          const page = formula?.page ? ` (${t("pageShort", { page: formula.page })})` : "";
+          return `<button class="inline-link" data-formula-link="${formulaId}">${escapeHtml(formula?.title ?? formulaId)}${escapeHtml(page)}</button>`;
         })
         .join("")
-    : `<div class="empty-state">No variables matched the current search.</div>`;
+    : "";
 
-  variableListEl.querySelectorAll("[data-variable-id]").forEach((card) => {
-    card.addEventListener("click", (event) => {
-      const clickedFormulaLink = event.target.closest("[data-formula-link]");
-      if (clickedFormulaLink) {
-        selectFormula(clickedFormulaLink.dataset.formulaLink);
-        return;
-      }
-      selectVariable(card.dataset.variableId);
+  const anchorHtml = selectedVariable?.anchors?.length ? renderAnchorList(selectedVariable.anchors, t("anchors")) : "";
+
+  variableListEl.innerHTML = `
+    ${summaryHtml}
+    ${tableHtml}
+    ${selectedVariable ? `<div class="variable-summary-tail"><span>${escapeHtml(t("appearsIn"))}</span><div class="trace-links">${relatedFormulaLinks}</div>${anchorHtml}</div>` : ""}
+  `;
+
+  variableListEl.querySelectorAll("[data-variable-row]").forEach((row) => {
+    row.addEventListener("click", () => selectVariable(row.dataset.variableRow));
+  });
+  variableListEl.querySelectorAll("[data-formula-link]").forEach((button) => {
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selectFormula(button.dataset.formulaLink);
     });
   });
 
@@ -359,7 +649,7 @@ function renderGraph() {
               return `<button class="chip ${isActive ? "active" : ""}" data-variable-chip="${variableId}">${escapeHtml(variable?.symbol ?? variableId)}</button>`;
             })
             .join("");
-          const pageBadge = formula.page ? `<button class="page-badge" data-formula-page="${formula.page}">Page ${formula.page}</button>` : "";
+          const pageBadge = formula.page ? `<button class="page-badge" data-formula-page="${formula.page}">${escapeHtml(t("pageBadge", { page: formula.page }))}</button>` : "";
 
           return `
             <article class="formula-card ${isSelected ? "selected" : ""} ${isTraced ? "traced" : ""} ${isPageLinked ? "page-linked" : ""}" data-formula-id="${formula.id}">
@@ -376,7 +666,7 @@ function renderGraph() {
           `;
         })
         .join("")
-    : `<div class="empty-state wide">No formulas were reconstructed for this PDF.</div>`;
+    : `<div class="empty-state wide">${escapeHtml(t("noFormulas"))}</div>`;
 
   graphGridEl.querySelectorAll("[data-formula-id]").forEach((card) => {
     card.addEventListener("click", (event) => {
@@ -405,8 +695,8 @@ function renderDetail() {
   const formula = getFormulaMap().get(state.selectedFormulaId);
   const variableMap = getVariableMap();
   if (!formula) {
-    detailTitleEl.textContent = "Select a formula";
-    detailContentEl.innerHTML = `<div class="empty-state">Upload a paper to inspect a formula.</div>`;
+    detailTitleEl.textContent = t("selectFormula");
+    detailContentEl.innerHTML = `<div class="empty-state">${escapeHtml(t("uploadToInspect"))}</div>`;
     return;
   }
 
@@ -418,14 +708,14 @@ function renderDetail() {
     <section class="detail-hero">
       <div class="detail-expression math-block math-block-large" data-formula-math="${formula.id}"></div>
       <p class="detail-summary">${escapeHtml(formula.physicalMeaning)}</p>
-      <p class="detail-memory"><strong>Memory hook:</strong> ${escapeHtml(formula.memory)}</p>
-      <p class="detail-summary"><strong>Source page:</strong> ${formula.page || "unknown"}</p>
-      <p class="detail-summary"><strong>Semantic:</strong> LHS [${escapeHtml((semantic.lhsSymbols || []).join(", "))}] RHS [${escapeHtml((semantic.rhsSymbols || []).join(", "))}] Ops [${escapeHtml((semantic.operators || []).join(" "))}]</p>
-      ${formula.page ? `<button class="mini-button" data-jump-page="${formula.page}">Jump to page ${formula.page}</button>` : ""}
-      ${renderAnchorList(formula.anchors, "Paper anchors")}
+      <p class="detail-memory"><strong>${escapeHtml(t("memoryHook"))}:</strong> ${escapeHtml(formula.memory)}</p>
+      <p class="detail-summary"><strong>${escapeHtml(t("sourcePage"))}:</strong> ${formula.page || escapeHtml(t("unknown"))}</p>
+      <p class="detail-summary"><strong>${escapeHtml(t("semantic"))}:</strong> LHS [${escapeHtml((semantic.lhsSymbols || []).join(", "))}] RHS [${escapeHtml((semantic.rhsSymbols || []).join(", "))}] Ops [${escapeHtml((semantic.operators || []).join(" "))}]</p>
+      ${formula.page ? `<button class="mini-button" data-jump-page="${formula.page}">${escapeHtml(t("jumpToPage", { page: formula.page }))}</button>` : ""}
+      ${renderAnchorList(formula.anchors, t("paperAnchors"))}
     </section>
     <section class="detail-section">
-      <h3>Symbols in this formula</h3>
+      <h3>${escapeHtml(t("symbolsInFormula"))}</h3>
       <div class="bound-variable-list">
         ${(formula.inputs || [])
           .map((variableId) => {
@@ -446,7 +736,7 @@ function renderDetail() {
       </div>
     </section>
     <section class="detail-section">
-      <h3>Chunked explanation</h3>
+      <h3>${escapeHtml(t("chunkedExplanation"))}</h3>
       ${(formula.chunks || [])
         .map((chunk) => {
           const chips = (chunk.variableIds || [])
@@ -491,17 +781,22 @@ function renderDocInsight() {
   const insight = state.analysis.documentInsight || { overview: "", pipeline: [] };
   const warnings = state.analysis.warnings || [];
   const formulaCandidates = state.analysis.formulaCandidates || [];
-  const usageTips = buildUsageTips(state.analysis);
+  const languageNote =
+    normalizeLanguage(state.analysis.language || "en") !== normalizeLanguage(state.selectedLanguage)
+      ? t("taskLanguageMismatch", {
+          selected: getLanguageDisplayNameSafe(state.selectedLanguage),
+          current: getLanguageDisplayNameSafe(state.analysis.language || "en"),
+        })
+      : t("taskLanguageCurrent", { current: getLanguageDisplayNameSafe(state.analysis.language || "en") });
   docInsightEl.innerHTML = `
-    <p>${escapeHtml(insight.overview || "No document insight available.")}</p>
-    <h4>How to use</h4>
-    <ul class="insight-list">${usageTips.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>
-    <h4>Pipeline</h4>
+    <p>${escapeHtml(insight.overview || "")}</p>
+    <p class="muted">${escapeHtml(languageNote)}</p>
+    <h4>${escapeHtml(t("pipeline"))}</h4>
     <ol class="insight-list">${(insight.pipeline || []).map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>
-    <h4>Warnings</h4>
-    <ul class="insight-list">${warnings.length ? warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>No warnings.</li>"}</ul>
-    <h4>Formula candidates</h4>
-    <ul class="insight-list">${formulaCandidates.length ? formulaCandidates.slice(0, 10).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : "<li>No candidates detected.</li>"}</ul>
+    <h4>${escapeHtml(t("warnings"))}</h4>
+    <ul class="insight-list">${warnings.length ? warnings.map((item) => `<li>${escapeHtml(item)}</li>`).join("") : `<li>${escapeHtml(t("noWarnings"))}</li>`}</ul>
+    <h4>${escapeHtml(t("formulaCandidates"))}</h4>
+    <ul class="insight-list">${formulaCandidates.length ? formulaCandidates.slice(0, 10).map((item) => `<li>${escapeHtml(item)}</li>`).join("") : `<li>${escapeHtml(t("noCandidates"))}</li>`}</ul>
   `;
 }
 
@@ -509,7 +804,7 @@ function renderPdfPreview() {
   const maxPage = Math.max(1, Number(state.analysis.pageCount) || 1);
   state.activePdfPage = clamp(state.activePdfPage, 1, maxPage);
 
-  pageIndicatorEl.textContent = `Page ${state.activePdfPage} / ${maxPage}`;
+  pageIndicatorEl.textContent = t("pageIndicator", { page: state.activePdfPage, maxPage });
   prevPageEl.disabled = state.activePdfPage <= 1;
   nextPageEl.disabled = state.activePdfPage >= maxPage;
 
@@ -540,7 +835,7 @@ function renderPdfPreview() {
             )} - ${escapeHtml(formula.title)}</button>`
         )
         .join("")
-    : "<p class='muted'>No formula node is currently linked to this page.</p>";
+    : `<p class='muted'>${escapeHtml(t("noFormulasOnPage"))}</p>`;
 
   pageFormulaLinksEl.querySelectorAll("[data-page-formula]").forEach((button) => {
     button.addEventListener("click", () => selectFormula(button.dataset.pageFormula));
@@ -656,7 +951,11 @@ function drawConnections() {
 
 function findVariablePath(sourceId, targetId) {
   if (sourceId === targetId) {
-    return { variablePath: [sourceId], formulaPath: [], label: `${getVariableMap().get(sourceId)?.symbol} is already selected.` };
+    return {
+      variablePath: [sourceId],
+      formulaPath: [],
+      label: t("alreadySelected", { symbol: getVariableMap().get(sourceId)?.symbol || sourceId }),
+    };
   }
 
   const adjacency = new Map(getVariables().map((variable) => [variable.id, []]));
@@ -702,7 +1001,7 @@ function findVariablePath(sourceId, targetId) {
     }
   }
 
-  return { variablePath: [sourceId, targetId], formulaPath: [], label: "No semantic path found in the current graph." };
+  return { variablePath: [sourceId, targetId], formulaPath: [], label: t("noPath") };
 }
 
 function getVariables() {
@@ -728,8 +1027,13 @@ function setStatus(message, isError = false, progress = 0) {
 }
 
 function buildTaskStatusText(stage, message) {
-  const stageLabel = TASK_STAGE_LABELS[stage] || stage;
+  const stageLabel = getStageLabel(stage);
   return `${stageLabel}: ${message}`;
+}
+
+function getStageLabel(stage) {
+  const labels = CLEAN_TASK_STAGE_LABELS[normalizeLanguage(state.selectedLanguage)] || CLEAN_TASK_STAGE_LABELS.en;
+  return labels[stage] || stage;
 }
 
 function extractFilename(pdfUrl) {
@@ -751,6 +1055,34 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function t(key, values = {}) {
+  const strings = CLEAN_UI_STRINGS[normalizeLanguage(state.selectedLanguage)] || CLEAN_UI_STRINGS.en;
+  return interpolate(strings[key] || CLEAN_UI_STRINGS.en[key] || key, values);
+}
+
+function interpolate(template, values = {}) {
+  return String(template).replace(/\{(\w+)\}/g, (_, key) => String(values[key] ?? ""));
+}
+
+function normalizeLanguage(language) {
+  return String(language || "").toLowerCase().startsWith("zh") ? "zh" : "en";
+}
+
+function getLanguageDisplayName(language) {
+  return normalizeLanguage(language) === "zh" ? "中文" : "English";
+}
+
+function getLanguageDisplayNameSafe(language) {
+  return normalizeLanguage(language) === "zh" ? "中文" : "English";
+}
+
+function setText(selector, value) {
+  const node = document.querySelector(selector);
+  if (node) {
+    node.textContent = value;
+  }
 }
 
 function renderAnchorList(anchors = [], title = "Anchors") {
@@ -787,18 +1119,18 @@ function formulaPriorityScore(formula) {
 
 function buildUsageTips(analysis) {
   const tips = [
-    "Upload returns immediately and the page begins polling task progress in the background.",
-    "PyMuPDF produces the first visible graph first; Nougat enhancement may continue after you can already read the paper.",
-    "Click a formula card in the center, then inspect its rendered equation and linked variables on the right.",
-    "Use the page badge or Jump button to move the PDF preview to the linked page.",
+    t("usageTip1"),
+    t("usageTip2"),
+    t("usageTip3"),
+    t("usageTip4"),
   ];
 
   if (analysis.status === "fallback") {
-    tips.push("Fallback mode means this result was reconstructed without full LLM semantics, so labels and relations are less reliable.");
+    tips.push(t("usageTipFallback"));
   }
 
   if ((analysis.warnings || []).length) {
-    tips.push("If a formula looks incomplete, check the warnings before trusting the semantic explanation.");
+    tips.push(t("usageTipWarnings"));
   }
 
   return tips;

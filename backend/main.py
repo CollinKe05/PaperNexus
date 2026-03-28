@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+import re
 from pathlib import Path
 
 import fitz
@@ -12,6 +13,14 @@ from fastapi.staticfiles import StaticFiles
 from backend.config import settings
 from backend.models import AnalysisResult, AnalysisTaskCreateResponse, AnalysisTaskStatusResponse, HealthResponse
 from backend.services import AnalysisTaskManager, LlmAnalysisService, NougatService, OcrService, PdfParserService
+
+
+SECRET_PATTERNS = [
+    re.compile(r"\bsk-[A-Za-z0-9_-]{12,}\b"),
+    re.compile(r"\bhf_[A-Za-z0-9]{12,}\b"),
+    re.compile(r"\b(?:Bearer\s+)?[A-Za-z0-9_-]{24,}\.[A-Za-z0-9_-]{16,}\.[A-Za-z0-9_-]{16,}\b"),
+    re.compile(r"(?i)\b(api[_-]?key|token|secret)\b\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{10,}['\"]?"),
+]
 
 app = FastAPI(title="PaperNexus API", version="0.1.0")
 app.add_middleware(
@@ -51,6 +60,7 @@ def health() -> HealthResponse:
 async def analyze_pdf(
     file: UploadFile = File(...),
     quick_mode: bool = Form(False),
+    language: str = Form("en"),
 ) -> AnalysisTaskCreateResponse:
     if not file.filename or not file.filename.lower().endswith(".pdf"):
         raise HTTPException(status_code=400, detail="Please upload a PDF file.")
@@ -63,7 +73,7 @@ async def analyze_pdf(
     if len(payload) > max_size:
         raise HTTPException(status_code=400, detail=f"File too large. Max size is {settings.max_upload_mb} MB.")
 
-    safe_name = Path(file.filename).name
+    safe_name = redact_secrets(Path(file.filename).name)
     saved_path = upload_dir / safe_name
     saved_path.write_bytes(payload)
 
@@ -75,7 +85,7 @@ async def analyze_pdf(
         progress=0.05,
         message=f"Uploaded {safe_name}. Waiting to start parsing.",
     )
-    asyncio.create_task(run_analysis_pipeline(task.task_id, safe_name, payload, quick_mode))
+    asyncio.create_task(run_analysis_pipeline(task.task_id, safe_name, payload, quick_mode, language))
 
     return AnalysisTaskCreateResponse(
         taskId=task.task_id,
@@ -93,7 +103,7 @@ def get_analysis_task(task_id: str) -> AnalysisTaskStatusResponse:
     return task.to_response()
 
 
-async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, quick_mode: bool) -> None:
+async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, quick_mode: bool, language: str) -> None:
     try:
         await task_manager.update(
             task_id,
@@ -103,6 +113,7 @@ async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, qu
             message="Running PyMuPDF formula extraction.",
         )
         parsed = pdf_parser.parse(safe_name, payload)
+        redact_parsed_pdf(parsed)
 
         await task_manager.update(
             task_id,
@@ -119,8 +130,9 @@ async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, qu
             progress=0.48,
             message="Building the first interactive view from PyMuPDF results.",
         )
-        initial_result = await llm_service.analyze(parsed)
+        initial_result = await llm_service.analyze(parsed, language)
         attach_pdf_url(initial_result, safe_name)
+        redact_analysis_result(initial_result)
 
         should_skip_nougat = quick_mode or parsed.page_count > settings.nougat_max_pages or not nougat_service.available
         if quick_mode:
@@ -181,6 +193,8 @@ async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, qu
             except Exception as exc:
                 parsed.warnings.append(f"OCR enhancement failed: {exc}")
 
+        redact_parsed_pdf(parsed)
+
         try:
             await task_manager.update(
                 task_id,
@@ -189,10 +203,12 @@ async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, qu
                 progress=0.88,
                 message="Rebuilding the semantic graph with Nougat-enhanced formulas.",
             )
-            enhanced_result = await llm_service.analyze(parsed)
+            enhanced_result = await llm_service.analyze(parsed, language)
             attach_pdf_url(enhanced_result, safe_name)
+            redact_analysis_result(enhanced_result)
         except Exception as exc:
             initial_result.warnings.append(f"Enhanced semantic rebuild failed, so the initial PyMuPDF result was kept: {exc}")
+            redact_analysis_result(initial_result)
             await task_manager.update(
                 task_id,
                 status="completed",
@@ -224,6 +240,54 @@ async def run_analysis_pipeline(task_id: str, safe_name: str, payload: bytes, qu
 
 def attach_pdf_url(result: AnalysisResult, filename: str) -> None:
     result.pdf_url = f"/uploads/{filename}"
+
+
+def redact_parsed_pdf(parsed) -> None:
+    parsed.full_text = redact_secrets(parsed.full_text)
+    parsed.text_blocks = [redact_secrets(block) for block in parsed.text_blocks]
+    parsed.warnings = [redact_secrets(item) for item in parsed.warnings]
+    for candidate in parsed.formula_candidates:
+        candidate.expression = redact_secrets(candidate.expression)
+        candidate.context = redact_secrets(candidate.context)
+
+
+def redact_analysis_result(result: AnalysisResult) -> None:
+    result.document_title = redact_secrets(result.document_title)
+    result.source_filename = redact_secrets(result.source_filename)
+    result.extracted_text = redact_secrets(result.extracted_text)
+    result.formula_candidates = [redact_secrets(item) for item in result.formula_candidates]
+    result.warnings = [redact_secrets(item) for item in result.warnings]
+    result.document_insight.overview = redact_secrets(result.document_insight.overview)
+    result.document_insight.pipeline = [redact_secrets(item) for item in result.document_insight.pipeline]
+
+    for variable in result.variables:
+        variable.symbol = redact_secrets(variable.symbol)
+        variable.name = redact_secrets(variable.name)
+        variable.type = redact_secrets(variable.type)
+        variable.unit = redact_secrets(variable.unit)
+        variable.role = redact_secrets(variable.role)
+        variable.meaning = redact_secrets(variable.meaning)
+        variable.memory = redact_secrets(variable.memory)
+        variable.source = redact_secrets(variable.source)
+        variable.anchors = [redact_secrets(item) for item in variable.anchors]
+
+    for formula in result.formulas:
+        formula.title = redact_secrets(formula.title)
+        formula.expression = redact_secrets(formula.expression)
+        formula.physical_meaning = redact_secrets(formula.physical_meaning)
+        formula.memory = redact_secrets(formula.memory)
+        formula.paper_note = redact_secrets(formula.paper_note)
+        formula.anchors = [redact_secrets(item) for item in formula.anchors]
+        for chunk in formula.chunks:
+            chunk.label = redact_secrets(chunk.label)
+            chunk.text = redact_secrets(chunk.text)
+
+
+def redact_secrets(text: str | None) -> str:
+    value = str(text or "")
+    for pattern in SECRET_PATTERNS:
+        value = pattern.sub("[REDACTED]", value)
+    return value
 
 
 @app.get("/api/pdf-page-image/{filename}/{page}")

@@ -73,6 +73,7 @@ class AnalysisResult(BaseModel):
     source_filename: str = Field(alias="sourceFilename")
     pdf_url: str | None = Field(default=None, alias="pdfUrl")
     page_count: int = Field(alias="pageCount")
+    language: str = "en"
     status: Literal["ok", "fallback"] = "ok"
     variables: list[Variable]
     formulas: list[Formula]

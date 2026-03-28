@@ -14,19 +14,28 @@
     <div class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Interactive Paper Graph</p>
+          <p class="eyebrow" id="hero-eyebrow">Interactive Paper Graph</p>
           <h1>PaperNexus</h1>
         </div>
+        <div class="topbar-actions">
+          <label class="toggle-row compact-row" for="language-select">
+            <span id="language-label">Language</span>
+            <select id="language-select" class="mini-select">
+              <option value="en">English</option>
+              <option value="zh">Chinese</option>
+            </select>
+          </label>
         <div class="paper-meta" id="paper-meta">
           <span class="meta-pill">No PDF loaded</span>
+        </div>
         </div>
       </header>
 
       <section class="panel upload-panel">
         <div class="upload-copy">
-          <p class="panel-kicker">Pipeline</p>
-          <h2>Upload a PDF for semantic parsing + precise formula grounding</h2>
-          <p class="muted">
+          <p class="panel-kicker" id="upload-kicker">Pipeline</p>
+          <h2 id="upload-title">Upload a PDF for semantic parsing + precise formula grounding</h2>
+          <p class="muted" id="upload-copy-text">
             The backend runs formula region detection, optional OCR, and semantic dependency parsing.
           </p>
         </div>
@@ -34,7 +43,7 @@
           <input id="pdf-input" type="file" accept="application/pdf" />
           <label class="toggle-row" for="quick-mode">
             <input id="quick-mode" type="checkbox" />
-            <span>Quick mode: only run PyMuPDF first, then open the reader immediately</span>
+            <span id="quick-mode-label">Quick mode: only run PyMuPDF first, then open the reader immediately</span>
           </label>
           <button id="analyze-button" class="action-button">Analyze PDF</button>
         </div>
@@ -42,14 +51,18 @@
         <div class="progress-wrap" aria-hidden="true">
           <div id="status-progress-bar" class="progress-bar"></div>
         </div>
+        <section class="usage-guide panel-lite">
+          <h3 id="usage-guide-title">How to use</h3>
+          <div id="usage-guide" class="usage-guide-list"></div>
+        </section>
       </section>
 
       <main class="layout">
         <aside class="panel sidebar-panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">Dynamic Parameter Sidebar</p>
-              <h2>Variables</h2>
+              <p class="panel-kicker" id="sidebar-kicker">Dynamic Parameter Sidebar</p>
+              <h2 id="variables-title">Variables</h2>
             </div>
             <input
               id="variable-search"
@@ -62,8 +75,8 @@
           <section id="variable-list" class="variable-list" aria-label="Variable list"></section>
 
           <section class="panel-footer">
-            <h3>Connection Finder</h3>
-            <p class="muted">
+            <h3 id="connection-title">Connection Finder</h3>
+            <p class="muted" id="connection-copy">
               Pick any two variables to reveal the shortest semantic path through the formula graph.
             </p>
             <div class="connection-controls">
@@ -78,14 +91,14 @@
         <section class="panel graph-panel">
           <div class="panel-header graph-header">
             <div>
-              <p class="panel-kicker">Formula Graph Area</p>
-              <h2>Dependency Topology</h2>
+              <p class="panel-kicker" id="graph-kicker">Formula Graph Area</p>
+              <h2 id="graph-title">Dependency Topology</h2>
             </div>
             <div class="graph-legend">
-              <span><i class="legend-line"></i> dependency</span>
-              <span><i class="legend-chip selected"></i> selected</span>
-              <span><i class="legend-chip traced"></i> traced</span>
-              <span><i class="legend-chip page-linked"></i> page-linked</span>
+              <span><i class="legend-line"></i> <span id="legend-dependency">dependency</span></span>
+              <span><i class="legend-chip selected"></i> <span id="legend-selected">selected</span></span>
+              <span><i class="legend-chip traced"></i> <span id="legend-traced">traced</span></span>
+              <span><i class="legend-chip page-linked"></i> <span id="legend-page-linked">page-linked</span></span>
             </div>
           </div>
 
@@ -98,7 +111,7 @@
         <aside class="panel detail-panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">Micro-Formula Detail View</p>
+              <p class="panel-kicker" id="detail-kicker">Micro-Formula Detail View</p>
               <h2 id="detail-title">Select a formula</h2>
             </div>
           </div>
@@ -106,7 +119,7 @@
           <section id="detail-content" class="detail-content"></section>
 
           <section class="panel-footer doc-panel">
-            <h3>Document Insight</h3>
+            <h3 id="doc-insight-title">Document Insight</h3>
             <div id="doc-insight" class="doc-insight"></div>
           </section>
         </aside>
@@ -114,8 +127,8 @@
         <aside class="panel pdf-panel">
           <div class="panel-header">
             <div>
-              <p class="panel-kicker">PDF Preview</p>
-              <h2>Page + Region Linked Reading</h2>
+              <p class="panel-kicker" id="pdf-kicker">PDF Preview</p>
+              <h2 id="pdf-title">Page + Region Linked Reading</h2>
             </div>
             <div class="pdf-controls">
               <button id="prev-page" class="mini-button" type="button">Prev</button>
@@ -133,7 +146,7 @@
           </section>
 
           <section class="panel-footer">
-            <h3>Formulas on this page</h3>
+            <h3 id="page-formulas-title">Formulas on this page</h3>
             <div id="page-formula-links" class="page-formula-links"></div>
           </section>
         </aside>
