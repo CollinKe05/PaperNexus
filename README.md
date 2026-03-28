@@ -51,8 +51,6 @@ An interactive reader based on large language models (LLM) can automatically par
 
 * **引线标注 (Line-out Explanations)**：公式中的每一个参数都会引出一条线，连接到一个详细的解释框。
 * **逻辑块分割 (Chunking)**：识别公式中的小组件（如被加号、乘号分割的独立模块）。
-* *示例*：$Cost = \text{Env\_Cost} + \text{Econ\_Cost}$。系统会将 $\text{Econ\_Cost}$ 识别为一个逻辑块，解释其内部是由“价格 $\times$ 数量”构成，代表“采购物品的总经济支出”。
-
 
 * **双向高亮联动**：在详情页点击任何一个参数，左侧的“参数表边栏”会自动滚动并高亮该参数，形成视觉锚点。
 
@@ -96,4 +94,4 @@ An interactive reader based on large language models (LLM) can automatically par
 
 ## 🤝 贡献
 
-目前项目仍处于构思阶段，如果您有技术建议和合作想法，欢迎提交 Issue 或 Pull Request。
+目前项目仍在调试阶段，识别不够精准，如果您有技术建议和合作想法，欢迎提交 Issue 或 Pull Request。
